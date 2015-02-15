@@ -40,3 +40,19 @@ chmod u+x AnypointStudio/AnypointStudio
 # 4. Click Anypoint Platform for APIs.
 # 5. In the Client ID and Client Secret fields, paste the unique values for your organization. 
 # Leave the Host, Port, and Path defaults as they are and click OK.  
+
+
+#Install JD - java decompiler - to view *.class source
+# 1. Under the Help menu in Anypoint Studio, select Install New Software. 
+# 2. In the Work with: field in the Install wizard, enter 
+# http://jd.benow.ca/jd-eclipse/update#sthash.DGpIlpUI.dpuf
+# 4. Check the box next to API Gateway runtime, then click Next.
+# 5. Follow the remaining steps to accept the installation. 
+# 6. After restart of Anypoint Studio: go to: Windows > Preferences 
+# 7. Select General > Editors > File Associations 
+# 8. Select "*.class" and in "Associated Editors" make "Class File Editor" as default. 
+# 9. Select "*.class without source" and in "Associated Editors" make "Class File Editor" as default. 
+
+
+
+
