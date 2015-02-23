@@ -46,7 +46,7 @@ chmod u+x AnypointStudio/AnypointStudio
 # 1. Under the Help menu in Anypoint Studio, select Install New Software. 
 # 2. In the Work with: field in the Install wizard, enter 
 # http://jd.benow.ca/jd-eclipse/update#sthash.DGpIlpUI.dpuf
-# 4. Check the box next to API Gateway runtime, then click Next.
+# 4. Check the box next to "Java Decompiler Eclipse Plug-in", then click Next.
 # 5. Follow the remaining steps to accept the installation. 
 # 6. After restart of Anypoint Studio: go to: Windows > Preferences 
 # 7. Select General > Editors > File Associations 
