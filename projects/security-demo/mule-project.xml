@@ -1,11 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <mule-project xmlns="http://www.mulesoft.com/tooling/project" runtimeId="org.mule.tooling.server.3.5.2.ee" schemaVersion="3.5.0.0">
-    <name>securityfips</name>
+    <name>security-demo</name>
     <description></description>
-    <muleExtension name="Encryption" qualifier="org.mule.tooling.ui.contribution.encryption.3.5.0"/>
-    <muleExtension name="Secure Property Placeholder" qualifier="org.mule.tooling.ui.contribution.secure-property-placeholder.3.5.0"/>
     <muleExtension name="Signature" qualifier="org.mule.tooling.ui.contribution.signature.3.5.0"/>
-    <muleExtension name="Filters" qualifier="org.mule.tooling.ui.contribution.filters.3.5.0"/>
-    <muleExtension name="CRC32" qualifier="org.mule.tooling.ui.contribution.crc32.3.5.0"/>
-    <muleExtension name="OAuth provider module" qualifier="org.mule.tooling.ui.contribution.oauth2-provider.3.5.0"/>
+    <muleExtension name="Encryption" qualifier="org.mule.tooling.ui.contribution.encryption.3.5.0"/>
 </mule-project>

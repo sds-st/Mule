@@ -26,25 +26,29 @@ http://www.mulesoft.org/schema/mule/filters http://www.mulesoft.org/schema/mule/
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
 http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
-	<encryption:config name="EncryptionKey" doc:name="Encryption1">
-	<encryption:xml-encrypter-config key="${password}${password}"/>
-		<encryption:jce-encrypter-config key="${password}${password}" />
-        
-	</encryption:config>
-	<signature:config name="SignatureKey" doc:name="Signature">
-		<signature:jce-signer-config key="${password}${password}" />
+	
+
+    <signature:config name="SignatureKey" doc:name="Signature">
+        <signature:jce-signer-config key="${password}${password}"/>
         <signature:xml-signer-config key="${password}"/>
-	</signature:config>
+    </signature:config>
+
 	<signature:config name="SignatureKeyStore" doc:name="Signature" >
 		<signature:jce-signer-config key="sig1" keyPassword="${password}" keystorePassword="${password}" keystorePath="keystore.jceks"/>
 		<signature:xml-signer-config keyPassword="${password}" keystorePassword="${password}" keystorePath="keystore.jks" key="efrat" />
 	</signature:config>
-    <encryption:config name="EncryptionKeyStore" doc:name="Encryption">
+    <encryption:config name="EncryptionKey" doc:name="Encryption">
+        <encryption:xml-encrypter-config key="${password}${password}"/>
+        <encryption:jce-encrypter-config key="${password}${password}"/>
+    </encryption:config>
+	
+	<encryption:config name="EncryptionKeyStore" doc:name="Encryption">
         <encryption:xml-encrypter-config key="k-aes" keystorePath="keystore.jceks" keystorePassword="${password}" keyPassword="${password}"/>
         <encryption:jce-encrypter-config key="sig2" keystorePath="keystore.jceks" keystorePassword="${password}" keyPassword="${password}"/>
     </encryption:config>
-
-	<flow name="signXmlFlow" doc:name="signXmlFlow">
+    
+    
+    <flow name="signXmlFlow" doc:name="signXmlFlow">
 		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="sign-xml" />
 		<set-variable variableName="inputXml"
 			value="&lt;user&gt;&lt;ne&gt;R&lt;/ne&gt;&lt;id&gt;R&lt;/id&gt;&lt;cc&gt;&lt;cy&gt;sa&lt;/cy&gt;&lt;number&gt;1234567890&lt;/number&gt;&lt;secret&gt;123&lt;/secret&gt;&lt;/cc&gt;&lt;/user&gt;"
@@ -241,24 +245,6 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 ]]></scripting:script>
         </scripting:component>
     </sub-flow>
-
-<flow name="stackoverflowFlow1" doc:name="stackoverflowFlow1">
-        <vm:inbound-endpoint exchange-pattern="one-way" path="in" doc:name="VM"/>
-        <set-variable variableName="#['counter']" value="#[0]" doc:name="Variable"/>
-        <flow-ref name="stackoverflowFlow2" doc:name="Flow Reference"/>
-    </flow>
-    <flow name="stackoverflowFlow2" doc:name="stackoverflowFlow2">
-        <logger level="INFO" doc:name="Logger"/>
-        <set-variable variableName="counter" value="#[flowVars['counter']+1]" doc:name="Variable"/>
-        <choice doc:name="Choice">
-            <when expression="#[flowVars['counter']==10]">
-                <logger level="INFO" doc:name="Logger"/>
-            </when>
-            <otherwise>
-                <flow-ref name="stackoverflowFlow2" doc:name="Flow Reference"/>
-            </otherwise>
-        </choice>
-    </flow>
 	
 	<flow name="encXmlFlowXpathLoop" doc:name="encXmlFlowXpathLoop">
 		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-xml-xpath-loop" />
@@ -290,5 +276,6 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 				doc:name="Logger" />
 		</catch-exception-strategy>
 	</flow>
-
+    
+    
 </mule>
