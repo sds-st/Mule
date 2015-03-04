@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting" xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking"
+	xmlns:oauth2-provider="http://www.mulesoft.org/schema/mule/oauth2-provider"
+	xmlns:signature="http://www.mulesoft.org/schema/mule/signature"
+	xmlns:secure-property-placeholder="http://www.mulesoft.org/schema/mule/secure-property-placeholder"
+	xmlns:filters="http://www.mulesoft.org/schema/mule/filters"
+	xmlns:crc32="http://www.mulesoft.org/schema/mule/crc32"
+	xmlns:encryption="http://www.mulesoft.org/schema/mule/encryption"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.5.2"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/encryption http://www.mulesoft.org/schema/mule/encryption/current/mule-encryption.xsd
+http://www.mulesoft.org/schema/mule/secure-property-placeholder http://www.mulesoft.org/schema/mule/secure-property-placeholder/current/mule-secure-property-placeholder.xsd
+http://www.mulesoft.org/schema/mule/oauth2-provider http://www.mulesoft.org/schema/mule/oauth2-provider/current/mule-oauth2-provider.xsd
+http://www.mulesoft.org/schema/mule/signature http://www.mulesoft.org/schema/mule/signature/current/mule-signature.xsd
+http://www.mulesoft.org/schema/mule/crc32 http://www.mulesoft.org/schema/mule/crc32/current/mule-crc32.xsd
+http://www.mulesoft.org/schema/mule/filters http://www.mulesoft.org/schema/mule/filters/current/mule-filters.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd">
+	<encryption:config name="EncryptionKey" doc:name="Encryption1">
+	<encryption:xml-encrypter-config key="${password}${password}"/>
+		<encryption:jce-encrypter-config key="${password}${password}" />
+        
+	</encryption:config>
+	<signature:config name="SignatureKey" doc:name="Signature">
+		<signature:jce-signer-config key="${password}${password}" />
+        <signature:xml-signer-config key="${password}"/>
+	</signature:config>
+	<signature:config name="SignatureKeyStore" doc:name="Signature" >
+		<signature:jce-signer-config key="sig1" keyPassword="${password}" keystorePassword="${password}" keystorePath="keystore.jceks"/>
+		<signature:xml-signer-config keyPassword="${password}" keystorePassword="${password}" keystorePath="keystore.jks" key="efrat" />
+	</signature:config>
+    <encryption:config name="EncryptionKeyStore" doc:name="Encryption">
+        <encryption:xml-encrypter-config key="k-aes" keystorePath="keystore.jceks" keystorePassword="${password}" keyPassword="${password}"/>
+        <encryption:jce-encrypter-config key="sig2" keystorePath="keystore.jceks" keystorePassword="${password}" keyPassword="${password}"/>
+    </encryption:config>
+
+	<flow name="signXmlFlow" doc:name="signXmlFlow">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="sign-xml" />
+		<set-variable variableName="inputXml"
+			value="&lt;user&gt;&lt;ne&gt;R&lt;/ne&gt;&lt;id&gt;R&lt;/id&gt;&lt;cc&gt;&lt;cy&gt;sa&lt;/cy&gt;&lt;number&gt;1234567890&lt;/number&gt;&lt;secret&gt;123&lt;/secret&gt;&lt;/cc&gt;&lt;/user&gt;"
+			doc:name="Variable" />
+		<signature:sign-xml config-ref="SignatureKey"
+			doc:name="Sign XML" input="#[flowVars.inputXml]" />
+		<set-variable variableName="signedXml" value="#[payload]"
+			doc:name="Variable" />
+		<signature:verify-signature config-ref="SignatureKey"
+			using="XML_SIGNER" doc:name="Verify Signature" input-ref="#[flowVars.signedXml]" />
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  com.nds.sds.mule.utils.XmlFormat.format(flowVars.inputXml)    + &quot;\n\n\n\n\nsigned:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.signedXml)] "
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception on sign xml" level="INFO"
+				doc:name="Logger" />
+		</catch-exception-strategy>
+	</flow>
+
+<flow name="signXmlFlowKeyStore" doc:name="signXmlFlowKeyStore">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="sign-xml-ks" />
+		<set-variable variableName="inputXml"
+			value="&lt;user&gt;&lt;ne&gt;R&lt;/ne&gt;&lt;id&gt;R&lt;/id&gt;&lt;cc&gt;&lt;cy&gt;sa&lt;/cy&gt;&lt;number&gt;1234567890&lt;/number&gt;&lt;secret&gt;123&lt;/secret&gt;&lt;/cc&gt;&lt;/user&gt;"
+			doc:name="Variable" />
+		<signature:sign-xml config-ref="SignatureKeyStore" doc:name="Signature" input="#[flowVars.inputXml]" />
+		
+		<set-variable variableName="signedXml" value="#[payload]"
+			doc:name="Variable" />
+		<signature:verify-signature config-ref="SignatureKeyStore"
+			using="XML_SIGNER" doc:name="Verify Signature" input-ref="#[flowVars.signedXml]" />
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  com.nds.sds.mule.utils.XmlFormat.format(flowVars.inputXml)    + &quot;\n\n\n\n\nsigned:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.signedXml)] "
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception on sign xml" level="INFO"
+				doc:name="Logger" />
+            <set-payload value="Display after failure" doc:name="Set Payload"/>
+		</catch-exception-strategy>
+	</flow>
+
+
+
+<flow name="signDataFlowKeyStore" doc:name="signDataFlowKeyStore">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="sign-data-ks" />
+		<set-variable variableName="inputData"
+			value="data to sign with keystore"
+			doc:name="Variable" />
+		<signature:sign config-ref="SignatureKeyStore" doc:name="Signature" input-ref="#[flowVars.inputData]"/>
+		<signature:verify-signature config-ref="SignatureKeyStore"
+			using="JCE_SIGNER" doc:name="Verify Signature" input-ref="#[flowVars.inputData]" expectedSignature="#[flowVars.signature]"/>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  flowVars.inputData    + &quot;\n\n\n\n\nsignature:\n\n&quot; + flowVars.signature]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception on sign xml" level="INFO"
+				doc:name="Logger" />
+            <set-payload value="Display after failure" doc:name="Set Payload"/>
+		</catch-exception-strategy>
+	</flow>
+
+<flow name="signDataFlow" doc:name="signDataFlow">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="sign-data" />
+		<set-variable variableName="inputData"
+			value="data to sign with key"
+			doc:name="Variable" />
+		<signature:sign config-ref="SignatureKey" doc:name="Signature" input-ref="#[flowVars.inputData]"/>
+		<signature:verify-signature config-ref="SignatureKey"
+			using="JCE_SIGNER" doc:name="Verify Signature" input-ref="#[flowVars.inputData]" expectedSignature="#[flowVars.signature]"/>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  flowVars.inputData    + &quot;\n\n\n\n\nsignature:\n\n&quot; + flowVars.signature]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception on sign xml" level="INFO"
+				doc:name="Logger" />
+            <set-payload value="Display after failure" doc:name="Set Payload"/>
+		</catch-exception-strategy>
+	</flow>
+
+
+
+<flow name="encDataFlow" doc:name="encDataFlow">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-data" />
+		<set-variable variableName="inputData"
+			value="data to encrypt with key"
+			doc:name="Variable" />
+        <encryption:encrypt config-ref="EncryptionKey" input-ref="#[flowVars.inputData]" using="JCE_ENCRYPTER" doc:name="Encrypt"/>
+        <set-variable variableName="encryptedData" value="#[payload]" doc:name="Variable"/>
+        <encryption:decrypt config-ref="EncryptionKey" input-ref="#[flowVars.encryptedData]" doc:name="Encryption"/>
+        <set-variable variableName="decryptedData" value="#[payload]" doc:name="Variable"/>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  flowVars.inputData    + &quot;\n\n\n\n\nencryptedData:\n\n&quot; + flowVars.encryptedData + &quot;\n\n\n\n\ndecryptedData:\n\n&quot; + flowVars.decryptedData]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception on sign xml" level="INFO"
+				doc:name="Logger" />
+            <set-payload value="Display after failure" doc:name="Set Payload"/>
+		</catch-exception-strategy>
+	</flow>
+
+<flow name="encDataFlowWithKeyStore" doc:name="encDataFlowWithKeyStore">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-data-ks" />
+		<set-variable variableName="inputData"
+			value="data to encrypt with key"
+			doc:name="Variable" />
+        <encryption:encrypt config-ref="EncryptionKeyStore" input-ref="#[flowVars.inputData]" using="JCE_ENCRYPTER" doc:name="Encrypt"/>
+        <set-variable variableName="encryptedData" value="#[payload]" doc:name="Variable"/>
+        <encryption:decrypt config-ref="EncryptionKeyStore" input-ref="#[flowVars.encryptedData]" doc:name="Encryption"/>
+        <set-variable variableName="decryptedData" value="#[payload]" doc:name="Variable"/>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  flowVars.inputData    + &quot;\n\n\n\n\nencryptedData:\n\n&quot; + flowVars.encryptedData + &quot;\n\n\n\n\ndecryptedData:\n\n&quot; + flowVars.decryptedData]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception on sign xml" level="INFO"
+				doc:name="Logger" />
+            <set-payload value="Exception: #[message.toString()]" doc:name="Set Payload"/>
+		</catch-exception-strategy>
+	</flow>
+
+
+
+	<flow name="encXmlFlow" doc:name="encXmlFlow">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-xml" />
+		<set-variable variableName="inputXml"
+			value="&lt;user&gt;&lt;ne&gt;R&lt;/ne&gt;&lt;id&gt;R&lt;/id&gt;&lt;cc&gt;&lt;cy&gt;sa&lt;/cy&gt;&lt;number&gt;1234567890&lt;/number&gt;&lt;secret&gt;123&lt;/secret&gt;&lt;/cc&gt;&lt;/user&gt;"
+			doc:name="Variable" />
+        <encryption:encrypt config-ref="EncryptionKey" input-ref="#[flowVars.inputXml]" using="XML_ENCRYPTER" doc:name="Encryption"/>
+		<set-variable variableName="encryptedXml" value="#[payload]"
+			doc:name="Variable" />
+        <encryption:decrypt config-ref="EncryptionKey" input-ref="#[flowVars.encryptedXml]" using="XML_ENCRYPTER" doc:name="Encryption"/>
+        <set-variable variableName="decryptedXml" value="#[payload]" doc:name="Variable"/>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  com.nds.sds.mule.utils.XmlFormat.format(flowVars.inputXml)    + &quot;\n\n\n\n\nencrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.encryptedXml)+ &quot;\n\n\n\n\ndecrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.decryptedXml) ]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception" level="INFO"
+				doc:name="Logger" />
+		</catch-exception-strategy>
+	</flow>
+	
+
+	
+	<flow name="encXmlFlowWithKeyStore" doc:name="encXmlFlowWithKeyStore">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-xml-ks" />
+		<set-variable variableName="inputXml"
+			value="&lt;user&gt;&lt;ne&gt;R&lt;/ne&gt;&lt;id&gt;R&lt;/id&gt;&lt;cc&gt;&lt;cy&gt;sa&lt;/cy&gt;&lt;number&gt;1234567890&lt;/number&gt;&lt;secret&gt;123&lt;/secret&gt;&lt;/cc&gt;&lt;/user&gt;"
+			doc:name="Variable" />
+        <encryption:encrypt config-ref="EncryptionKeyStore" input-ref="#[flowVars.inputXml]" using="XML_ENCRYPTER" doc:name="Encrypt"/>
+		<set-variable variableName="encryptedXml" value="#[payload]"
+			doc:name="Variable" />
+        <encryption:decrypt config-ref="EncryptionKeyStore" input-ref="#[flowVars.encryptedXml]" using="XML_ENCRYPTER" doc:name="Decrypt"/>
+        <set-variable variableName="decryptedXml" value="#[payload]" doc:name="Variable"/>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  com.nds.sds.mule.utils.XmlFormat.format(flowVars.inputXml)    + &quot;\n\n\n\n\nencrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.encryptedXml)+ &quot;\n\n\n\n\ndecrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.decryptedXml) ]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception" level="INFO"
+				doc:name="Logger" />
+		</catch-exception-strategy>
+	</flow>
+	
+	<flow name="encXmlFlowXpath" doc:name="encXmlFlowXpath">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-xml-xpath" />
+        <flow-ref name="loadfile" doc:name="Flow Reference"/>
+        <set-variable variableName="inputXml" value="#[payload]" doc:name="Variable"/>
+        <encryption:encrypt config-ref="EncryptionKey" input-ref="#[flowVars.inputXml]" using="XML_ENCRYPTER" doc:name="Encryption">
+            <encryption:xml-encrypter xpath="/desc/temp/data"/>
+        </encryption:encrypt>
+		<set-variable variableName="encryptedXml" value="#[payload]"
+			doc:name="Variable" />
+        <encryption:decrypt config-ref="EncryptionKey" input-ref="#[flowVars.encryptedXml]" using="XML_ENCRYPTER" doc:name="Encryption">
+            <encryption:xml-encrypter xpath="/a/c/e"/>
+        </encryption:decrypt>
+        <set-variable variableName="decryptedXml" value="#[payload]" doc:name="Variable"/>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  com.nds.sds.mule.utils.XmlFormat.format(flowVars.inputXml)    + &quot;\n\n\n\n\nencrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.encryptedXml)+ &quot;\n\n\n\n\ndecrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.decryptedXml) ]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception" level="INFO"
+				doc:name="Logger" />
+		</catch-exception-strategy>
+	</flow>
+
+	<flow name="loadfileFlow" doc:name="loadfileFlow">
+		<http:inbound-endpoint exchange-pattern="request-response"
+			host="localhost" port="${port}" doc:name="HTTP" path="loadfile" />
+        <flow-ref name="loadfile" doc:name="Flow Reference"/>
+
+		<logger message="after load #[payload]" level="INFO" doc:name="Logger" />
+
+	</flow>
+    <sub-flow name="loadfile" doc:name="loadfile">
+        <scripting:component doc:name="Load text file">
+            <scripting:script engine="Groovy"><![CDATA[payload = this.getClass().getResource('input.xml').text
+]]></scripting:script>
+        </scripting:component>
+    </sub-flow>
+
+<flow name="stackoverflowFlow1" doc:name="stackoverflowFlow1">
+        <vm:inbound-endpoint exchange-pattern="one-way" path="in" doc:name="VM"/>
+        <set-variable variableName="#['counter']" value="#[0]" doc:name="Variable"/>
+        <flow-ref name="stackoverflowFlow2" doc:name="Flow Reference"/>
+    </flow>
+    <flow name="stackoverflowFlow2" doc:name="stackoverflowFlow2">
+        <logger level="INFO" doc:name="Logger"/>
+        <set-variable variableName="counter" value="#[flowVars['counter']+1]" doc:name="Variable"/>
+        <choice doc:name="Choice">
+            <when expression="#[flowVars['counter']==10]">
+                <logger level="INFO" doc:name="Logger"/>
+            </when>
+            <otherwise>
+                <flow-ref name="stackoverflowFlow2" doc:name="Flow Reference"/>
+            </otherwise>
+        </choice>
+    </flow>
+	
+	<flow name="encXmlFlowXpathLoop" doc:name="encXmlFlowXpathLoop">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-xml-xpath-loop" />
+        <flow-ref name="loadfile" doc:name="Flow Reference"/>
+        <set-variable variableName="inputXml" value="#[payload]" doc:name="Variable"/>
+        <encryption:encrypt config-ref="EncryptionKey" input-ref="#[flowVars.inputXml]" using="XML_ENCRYPTER" doc:name="Encryption">
+            <encryption:xml-encrypter xpath="/desc/temp/data"/>
+        </encryption:encrypt>
+		<set-variable variableName="encryptedXml" value="#[payload]"
+			doc:name="Variable" />
+        <encryption:decrypt config-ref="EncryptionKey" input-ref="#[flowVars.encryptedXml]" using="XML_ENCRYPTER" doc:name="Encryption">
+            <encryption:xml-encrypter xpath="/desc/temp/data"/>
+        </encryption:decrypt>
+        <set-variable variableName="decryptedXml" value="#[payload]" doc:name="Variable"/>
+        <choice doc:name="while">
+            <when expression="#[flowVars.decryptedXml.contains(&quot;xenc:CipherData&quot;)]">
+                <encryption:decrypt config-ref="EncryptionKey" input-ref="#[flowVars.decryptedXml]" doc:name="Encryption">
+                    <encryption:xml-encrypter xpath="/desc/temp/data"/>
+                </encryption:decrypt>
+                <set-variable variableName="decryptedXml" value="#[payload]" doc:name="Variable"/>
+                <logger message="after decription: #[flowVars.decryptedXml.contains(&quot;xenc:CipherData&quot;)] #[flowVars.decryptedXml]" level="INFO" doc:name="Logger"/>
+            </when>
+        </choice>
+		<set-payload
+			value="#[&quot;input:\n\n&quot; +  com.nds.sds.mule.utils.XmlFormat.format(flowVars.inputXml)    + &quot;\n\n\n\n\nencrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.encryptedXml)+ &quot;\n\n\n\n\ndecrypted:\n\n&quot; + com.nds.sds.mule.utils.XmlFormat.format(flowVars.decryptedXml) ]"
+			doc:name="Set Payload" />
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception" level="INFO"
+				doc:name="Logger" />
+		</catch-exception-strategy>
+	</flow>
+
+</mule>
