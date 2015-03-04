@@ -40,6 +40,8 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
     <encryption:config name="EncryptionKey" doc:name="Encryption">
         <encryption:xml-encrypter-config key="${password}${password}"/>
         <encryption:jce-encrypter-config key="${password}${password}"/>
+        <encryption:pgp-encrypter-config publicKeyRingFileName="pubring.gpg" secretKeyRingFileName="secring.gpg" secretAliasId="1551092709913607250" secretPassphrase="${key}" principal="mulesoft"/>
+        
     </encryption:config>
 	
 	<encryption:config name="EncryptionKeyStore" doc:name="Encryption">
@@ -276,6 +278,22 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
 				doc:name="Logger" />
 		</catch-exception-strategy>
 	</flow>
-    
+    <flow name="encPgp" doc:name="encPgp">
+		<http:inbound-endpoint exchange-pattern="request-response"	host="${host}" port="${port}" doc:name="HTTP" path="enc-pgp" />
+		<set-variable variableName="inputData"
+			value="data to encrypt with pgp"
+			doc:name="Variable" />
+        <encryption:encrypt config-ref="EncryptionKey" input-ref="#[flowVars.inputData]" using="PGP_ENCRYPTER" doc:name="Encryption"/>
+        <set-variable variableName="encryption" value="#[payload]" doc:name="Variable"/>
+        <encryption:decrypt config-ref="EncryptionKey" input-ref="#[flowVars.encryption]" using="PGP_ENCRYPTER" doc:name="Encryption"/>
+        <set-variable variableName="decryptedData" value="#[payload]" doc:name="Variable"/>
+        <set-payload value="#[&quot;input:\n\n&quot; + flowVars.inputData + &quot;\n\n\n\nencryption:\n&quot; + flowVars.encryption + &quot;\n\n\n\ndecryption:\n&quot; + flowVars.decryptedData]" doc:name="Set Payload"/>
+      
+		<catch-exception-strategy doc:name="Catch Exception Strategy">
+			<logger message="catch exception on sign xml" level="INFO"
+				doc:name="Logger" />
+            <set-payload value="Display after failure" doc:name="Set Payload"/>
+		</catch-exception-strategy>
+	</flow>
     
 </mule>
