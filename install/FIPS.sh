@@ -2,6 +2,8 @@
 wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" 'http://download.oracle.com/otn-pub/java/jce/7/UnlimitedJCEPolicyJDK7.zip'
 mv ./UnlimitedJCEPolicyJDK7.zip@* UnlimitedJCEPolicyJDK7.zip
 unzip ./UnlimitedJCEPolicyJDK7.zip
+rm UnlimitedJCEPolicyJDK7.zip
+
 # Please replace $JAVA_HOME with your JAVA_HOME, or define this parameter correctly.
 cp ./UnlimitedJCEPolicy/*.jar $JAVA_HOME/jre/lib/security
 
