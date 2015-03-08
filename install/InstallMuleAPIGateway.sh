@@ -23,6 +23,7 @@ vi wrapper.conf
 # https://anypoint.mulesoft.com/accounts/#/cs/core/organization/view 
 # You will be required to login with the username and password you signed up to Mule's website. 
 
-
+# 5. Run
+cd ../bin
+./gateway start
  
-
