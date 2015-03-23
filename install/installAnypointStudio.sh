@@ -53,6 +53,16 @@ chmod u+x AnypointStudio/AnypointStudio
 # 8. Select "*.class" and in "Associated Editors" make "Class File Editor" as default. 
 # 9. Select "*.class without source" and in "Associated Editors" make "Class File Editor" as default. 
 
+#Install Stormpath
+# 1. Under the Help menu in Mule Studio, select Install New Software. 
+# 2. In the Work with: field in the Install wizard, use the drop-down menu to select MuleStudio Cloud Connectors Update Site.
+# Or use link: http://repository.mulesoft.org/connectors/releases/3.5.0
+# 3. Expand 'community' node
+# 4. Choose 'Stormpath Connector Mule Studio Extension'
+# 5. Click 'Next' 
+# 6. Click 'Next' 
+# 7. Accept terms 
+# 8. Finish
 
 
 
