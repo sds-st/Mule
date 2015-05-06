@@ -4,11 +4,11 @@ Enter file contents here# ======================================================
 # server 
 # http://www.mulesoft.com/ty/dl/management-linux
 
-wget 'http://s3.amazonaws.com/MuleEE/mmc-distribution-mule-console-bundle-3.5.2-HF1.tar.gz'
-tar -zxvf mmc-distribution-mule-console-bundle-3.5.2-HF1.tar.gz
-cd mmc-distribution-mule-console-bundle-3.5.2-HF1
+wget 'http://s3.amazonaws.com/MuleEE/mmc-distribution-mule-console-bundle-3.6.1.tar.gz'
+tar -zxvf mmc-distribution-mule-console-bundle-3.6.1.tar.gz
+cd mmc-distribution-mule-console-bundle-3.6.1
 
-./mule-enterprise-3.5.2/bin/mule -installLicense ~/mulesoft/mule-ee-license.lic 
+./mule-enterprise-3.6.1/bin/mule -installLicense ~/mulesoft/mule-ee-license.lic 
 #./mule -verifyLicense
 #./mule -unInstallLicense
 
@@ -21,6 +21,6 @@ cd mmc-distribution-mule-console-bundle-3.5.2-HF1
 #Finished starting Mule and MMC. 
  
 
-# open firefox: http://localhost:8585/mmc-3.5.2-HF1/
+# open firefox: http://localhost:8585/mmc-3.6.1-HF1/
 
-# $MULE_HOME = /home/ubuntu/mulesoft/installESB/mmc-distribution-mule-console-bundle-3.5.2-HF1/mule-enterprise-3.5.2
+# $MULE_HOME = /home/ubuntu/mulesoft/installESB/mmc-distribution-mule-console-bundle-3.6.1/mule-enterprise-3.6.1
