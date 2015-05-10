@@ -5,7 +5,7 @@
 #muleVersion="3.3.0"
 muleVersion="3.6.1"
 
-wget 'https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/'${muleVersion}'/mule-standalone-'${muleVersion}'3.6.1.tar.gz'
+wget 'https://repository-master.mulesoft.org/nexus/content/repositories/releases/org/mule/distributions/mule-standalone/'${muleVersion}'/mule-standalone-'${muleVersion}'.tar.gz'
 #wget 'http://dist.codehaus.org/mule/distributions/mule-standalone-'${muleVersion}'.tar.gz'
 sudo tar -xvf mule-standalone-${muleVersion}.tar.gz -C /usr/local
 rm mule-standalone-${muleVersion}.tar.gz
